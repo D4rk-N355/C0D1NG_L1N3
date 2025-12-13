@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>程式討論論壇</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>程式討論論壇</h1>
+
+  <!-- Auth 區塊 -->
+  <div id="auth">
+    <h2 id="authTitle">登入</h2>
+    <form id="authForm">
+      <input type="email" id="email" placeholder="Email" required><br>
+      <input type="password" id="password" placeholder="Password" required><br>
+      <div id="extraField"></div>
+      <button type="submit">送出</button>
+    </form>
+    <button id="switchBtn">切換到註冊</button>
+  </div>
+
+  <!-- 登出按鈕 -->
+  <button id="logoutBtn" style="display:none;">登出</button>
+
+  <!-- 顯示訊息 -->
+  <div id="feedback"></div>
+
+  <!-- SU 專屬功能（預設隱藏） -->
+  <div id="suPanel" style="display:none;">
+    <h3>超級使用者功能</h3>
+    <p>這裡可以管理所有帳號或系統設定。</p>
+  </div>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

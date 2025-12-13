@@ -1,0 +1,33 @@
+# Render service + managed Postgres template
+# Replace `your-github-username/your-repo` and `main` with your repo and branch.
+
+services:
+  - type: web
+    name: coding-line-web
+    env: python
+    repo: https://github.com/your-github-username/your-repo
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn proxy:app
+    envVars:
+      - key: GAS_API_URL
+        value: "https://script.google.com/macros/s/AKfycbx6UdvQqj0NABc2ngtTkyzk5dU9CwaMXOIbjUWmMab65A9HqoD387pXY49wHOpBsL-GEg/exec"
+      # DATABASE_URL will be injected from the managed database below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coding-line-db
+          property: connectionString
+
+databases:
+  - name: coding-line-db
+    engine: postgresql
+    version: 14
+    plan: starter
+    # region is optional; Render will default to your account region if omitted
+    # region: oregon
+
+# Notes:
+# - Update `repo` and `branch` to point to your GitHub repo.
+# - When this file is pushed to the repo, Render can import the service
+#   and create both the Web Service and the Managed Postgres according to
+#   this spec (you can also create them manually in the Render UI).

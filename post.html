@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>留言板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>留言板</h1>
+  <button id="logoutBtn">登出</button>
+  <!-- 顯示目前登入者暱稱 -->
+  <div id="currentUser">目前暱稱：載入中...</div>
+
+  <!-- 發文表單 -->
+  <form id="postForm">
+    <textarea id="postContent" placeholder="輸入貼文內容" required></textarea>
+    <button type="submit">送出貼文</button>
+  </form>
+
+  <!-- 顯示反饋訊息 -->
+  <div id="feedback"></div>
+
+  <!-- 貼文列表 -->
+  <div id="messages"></div>
+
+  <!-- 載入 JS -->
+  <script type="module" src="js/post.js"></script>
+  <script type="module" src="js/read.js"></script>
+</body>
+</html>
