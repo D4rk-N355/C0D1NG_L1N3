@@ -10,8 +10,6 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn proxy:app
     envVars:
-      - key: GAS_API_URL
-        value: "https://script.google.com/macros/s/AKfycbx6UdvQqj0NABc2ngtTkyzk5dU9CwaMXOIbjUWmMab65A9HqoD387pXY49wHOpBsL-GEg/exec"
       # DATABASE_URL will be injected from the managed database below
       - key: DATABASE_URL
         fromDatabase:
