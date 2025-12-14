@@ -1,6 +1,8 @@
 import os
 import datetime
 import importlib.util
+import sys
+import platform
 from flask import Flask, request, Response, jsonify
 
 from sqlalchemy import (
@@ -76,6 +78,56 @@ if DATABASE_URL:
     from sqlalchemy.orm import sessionmaker
 
     Session = sessionmaker(bind=engine, future=True)
+
+
+# Log environment and DB driver availability at startup so we can debug without shell access
+def _startup_diag():
+    try:
+        psycopg_version = None
+        psycopg2_version = None
+        try:
+            import psycopg as _p
+            psycopg_version = getattr(_p, "__version__", None)
+        except Exception:
+            psycopg_version = None
+        try:
+            import psycopg2 as _p2
+            psycopg2_version = getattr(_p2, "__version__", None)
+        except Exception:
+            psycopg2_version = None
+
+        diag = {
+            "python_version": sys.version.split()[0],
+            "platform": platform.platform(),
+            "has_psycopg_v3": HAS_PSYCOPG,
+            "psycopg_version": psycopg_version,
+            "has_psycopg2": HAS_PSYCOPG2,
+            "psycopg2_version": psycopg2_version,
+            "psycopg_dialect_available": PSYCOPG_DIALECT_AVAILABLE,
+        }
+        app.logger.info("startup diag: %s", diag)
+        return diag
+    except Exception as e:
+        app.logger.exception("startup diag failed: %s", e)
+        return {"error": str(e)}
+
+
+_startup_diag()
+
+
+@app.route("/_diag", methods=["GET"])
+def diag_endpoint():
+    """Return non-sensitive runtime diagnostics when ENABLE_DIAG=1 is set.
+
+    This endpoint is intended for temporary debugging in environments where
+    shell access is not available (e.g., Render free tier). It does NOT return
+    database credentials or sensitive information.
+    """
+    if os.environ.get("ENABLE_DIAG", "0").lower() not in ("1", "true", "yes"):
+        return jsonify({"error": "diagnostics disabled"}), 403
+
+    diag = _startup_diag()
+    return jsonify(diag)
 
 
 @app.route("/proxy", methods=["POST"])
