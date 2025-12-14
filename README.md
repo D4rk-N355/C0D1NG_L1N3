@@ -28,3 +28,5 @@ python proxy.py
 安全與注意事項：
 - 不要把真實密碼或私密金鑰放在程式碼裡。使用 Render 的 Secrets/Environment 來儲存 `DATABASE_URL` 或其他機敏資訊。
 - Windows 本機若要安裝 `psycopg2-binary` 可能需要 PostgreSQL dev headers，開發階段可以用 SQLite 測試；在 Render（Linux）上通常能正常安裝 `psycopg2-binary`。
+ - Windows 本機若要安裝 `psycopg2-binary` 可能需要 PostgreSQL dev headers，開發階段可以用 SQLite 測試；在 Render（Linux）上通常能正常安裝 `psycopg2-binary`。
+ - 已改用 psycopg v3（`psycopg[binary]`）以支援較新的 Python 版本。若你的 `DATABASE_URL` 使用 `postgres://` 開頭，程式會自動在啟動時把它轉成 `postgresql+psycopg://` 以符合 SQLAlchemy 的 psycopg v3 dialect。

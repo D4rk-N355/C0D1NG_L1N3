@@ -16,6 +16,12 @@ engine = None
 Session = None
 posts_table = None
 
+# If using psycopg v3 (psycopg[binary]) SQLAlchemy prefers the dialect
+# prefix postgresql+psycopg://. Normalize common connection strings
+# (many providers give postgres://) to the correct form.
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+
 if DATABASE_URL:
     # 建立 SQLAlchemy engine 與 table metadata
     engine = create_engine(DATABASE_URL, future=True)
