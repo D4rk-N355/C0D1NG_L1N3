@@ -1,5 +1,6 @@
 import os
 import datetime
+import importlib.util
 from flask import Flask, request, Response, jsonify
 
 from sqlalchemy import (
@@ -27,6 +28,9 @@ try:
 except Exception:
     HAS_PSYCOPG2 = False
 
+# Check whether SQLAlchemy has a dialect plugin for psycopg (v3)
+PSYCOPG_DIALECT_AVAILABLE = importlib.util.find_spec("sqlalchemy.dialects.postgresql.psycopg") is not None
+
 engine = None
 Session = None
 posts_table = None
@@ -37,9 +41,14 @@ if DATABASE_URL:
     # the SQLAlchemy dialect prefix when possible so SQLAlchemy imports the
     # correct DBAPI (psycopg for v3 or psycopg2 for v2).
     if DATABASE_URL.startswith("postgres://"):
-        if HAS_PSYCOPG:
+        # Prefer psycopg v3 only if SQLAlchemy provides the dialect plugin.
+        if HAS_PSYCOPG and PSYCOPG_DIALECT_AVAILABLE:
             DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
         elif HAS_PSYCOPG2:
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif HAS_PSYCOPG:
+            # psycopg v3 is installed but SQLAlchemy lacks the dialect plugin
+            # (older SQLAlchemy). Fall back to psycopg2 dialect if possible.
             DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
         else:
             raise RuntimeError(
