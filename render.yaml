@@ -5,7 +5,7 @@ services:
   - type: web
     name: coding-line-web
     env: python
-    runtime: python3.11
+  runtime: python3
     repo: https://github.com/your-github-username/your-repo
     branch: main
     buildCommand: pip install -r requirements.txt
@@ -16,6 +16,8 @@ services:
         fromDatabase:
           name: coding-line-db
           property: connectionString
+      - key: ENABLE_DIAG
+        value: "1"
 
 databases:
   - name: coding-line-db
