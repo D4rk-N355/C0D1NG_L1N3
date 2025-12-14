@@ -30,3 +30,10 @@ python proxy.py
 - Windows 本機若要安裝 `psycopg2-binary` 可能需要 PostgreSQL dev headers，開發階段可以用 SQLite 測試；在 Render（Linux）上通常能正常安裝 `psycopg2-binary`。
  - Windows 本機若要安裝 `psycopg2-binary` 可能需要 PostgreSQL dev headers，開發階段可以用 SQLite 測試；在 Render（Linux）上通常能正常安裝 `psycopg2-binary`。
  - 已改用 psycopg v3（`psycopg[binary]`）以支援較新的 Python 版本。若你的 `DATABASE_URL` 使用 `postgres://` 開頭，程式會自動在啟動時把它轉成 `postgresql+psycopg://` 以符合 SQLAlchemy 的 psycopg v3 dialect。
+ - 已改用 psycopg v3（`psycopg[binary]`）以支援較新的 Python 版本。若你的 `DATABASE_URL` 使用 `postgres://` 或 `postgresql://` 開頭，程式會在啟動時自動嘗試把它轉成合適的 SQLAlchemy dialect 前綴：
+    - 如果安裝了 psycopg v3，會轉為 `postgresql+psycopg://`
+    - 如果只有 psycopg2（較舊），會轉為 `postgresql+psycopg2://`
+ - 如果在 Render 上出現啟動時找不到 psycopg 的錯誤（例如 ModuleNotFoundError: No module named 'psycopg2' 或 undefined symbol errors），請：
+    1. 在 Render 的 Web Service Build logs 查看 pip 安裝階段是否成功安裝 `psycopg[binary]`。若安裝失敗，檢查 Python runtime 與 wheel 相容性。
+    2. 在 Render Dashboard 的 Service 設定中將 Runtime 設為 `python3.11`（或使用 repo 中的 `render.yaml` 指定 runtime），然後重新部署。
+    3. 若你想使用較新 Python（3.13+），可以改用 psycopg v3（已在 requirements 中設定為 `psycopg[binary]`），但仍需確認該 Python 版本有可用的 psycopg wheel。

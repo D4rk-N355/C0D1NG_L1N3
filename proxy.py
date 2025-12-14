@@ -12,17 +12,46 @@ app = Flask(__name__)
 # 支援 DATABASE_URL（Render 管理 Postgres） — 在 Render 上必須設定此 env var
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Detect available Postgres DB API package: prefer psycopg (v3), fall back to psycopg2
+HAS_PSYCOPG = False
+HAS_PSYCOPG2 = False
+try:
+    import psycopg as _psycopg  # type: ignore
+    HAS_PSYCOPG = True
+except Exception:
+    HAS_PSYCOPG = False
+
+try:
+    import psycopg2 as _psycopg2  # type: ignore
+    HAS_PSYCOPG2 = True
+except Exception:
+    HAS_PSYCOPG2 = False
+
 engine = None
 Session = None
 posts_table = None
 
-# If using psycopg v3 (psycopg[binary]) SQLAlchemy prefers the dialect
-# prefix postgresql+psycopg://. Normalize common connection strings
-# (many providers give postgres://) to the correct form.
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
-
+# Normalize DATABASE_URL based on installed driver and provider-provided schemes.
 if DATABASE_URL:
+    # provider might give postgres:// or postgresql://. Normalize to include
+    # the SQLAlchemy dialect prefix when possible so SQLAlchemy imports the
+    # correct DBAPI (psycopg for v3 or psycopg2 for v2).
+    if DATABASE_URL.startswith("postgres://"):
+        if HAS_PSYCOPG:
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+        elif HAS_PSYCOPG2:
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+        else:
+            raise RuntimeError(
+                "No Postgres DB driver found: install psycopg[binary] or psycopg2-binary, "
+                "or set Render runtime to a Python version compatible with your driver."
+            )
+
+    elif DATABASE_URL.startswith("postgresql://"):
+        # If psycopg v3 is available prefer explicit dialect prefix
+        if HAS_PSYCOPG and not DATABASE_URL.startswith("postgresql+psycopg://"):
+            DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
     # 建立 SQLAlchemy engine 與 table metadata
     engine = create_engine(DATABASE_URL, future=True)
     metadata = MetaData()
