@@ -5,6 +5,7 @@ services:
   - type: web
     name: coding-line-web
     env: python
+    runtime: python3.11
     repo: https://github.com/your-github-username/your-repo
     branch: main
     buildCommand: pip install -r requirements.txt
